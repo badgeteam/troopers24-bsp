@@ -42,6 +42,7 @@
 
 #define RP2040_ADDR 0x17  // RP2040 co-processor
 #define BNO055_ADDR 0x28  // BNO055 position sensor
+#define BME680_ADDR 0x77  // BME680 environmental sensor
 
 // SPI bus
 #define SPI_BUS               VSPI_HOST
