@@ -7,7 +7,7 @@
 #include "bno055.h"
 #include "ice40.h"
 #include "ili9341.h"
-#include "pins.h"
+#include "mch2022_badge.h"
 #include "rp2040.h"
 
 /** \brief Initialize basic board support
