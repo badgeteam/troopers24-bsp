@@ -94,7 +94,7 @@ esp_err_t bsp_init() {
     dev_ili9341.pin_reset             = GPIO_LCD_RESET;
     dev_ili9341.rotation              = 1;
     dev_ili9341.color_mode            = true;      // Blue and red channels are swapped
-    dev_ili9341.spi_speed             = 60000000;  // 60MHz
+    dev_ili9341.spi_speed             = 40000000;  // 40MHz
     dev_ili9341.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
     dev_ili9341.callback              = ili9341_set_lcd_mode;  // Callback for changing LCD mode between ESP32 and FPGA
 
