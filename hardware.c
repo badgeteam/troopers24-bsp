@@ -152,6 +152,8 @@ esp_err_t bsp_ice40_init() {
     dev_ice40.pin_int               = GPIO_INT_FPGA;
     dev_ice40.spi_speed_full_duplex = 26700000;
     dev_ice40.spi_speed_half_duplex = 40000000;
+    dev_ice40.spi_speed_turbo       = 80000000;
+    dev_ice40.spi_input_delay_ns    = 15;
     dev_ice40.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
     dev_ice40.get_done              = ice40_get_done_wrapper;
     dev_ice40.set_reset             = ice40_set_reset_wrapper;
