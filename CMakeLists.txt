@@ -5,6 +5,7 @@ idf_component_register(
         "appfs"
         "bus-i2c"
         "i2c-bno055"
+        "i2c-bme680"
         "pax-graphics"
         "sdcard"
         "spi-ice40"
