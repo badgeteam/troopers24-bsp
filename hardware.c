@@ -14,6 +14,7 @@ static BNO055  dev_bno055  = {0};
 static ILI9341 dev_ili9341 = {0};
 static ICE40   dev_ice40   = {0};
 static RP2040  dev_rp2040  = {0};
+static BME680  dev_bme680  = {0};
 
 static uint8_t rp2040_fw_version = 0;
 
@@ -200,6 +201,23 @@ esp_err_t bsp_bno055_init() {
     return ESP_OK;
 }
 
+esp_err_t bsp_bme680_init() {
+    if (!bsp_ready) return ESP_FAIL;
+    if (bme680_ready) return ESP_OK;
+
+    dev_bme680.i2c_bus = I2C_BUS_SYS;
+    dev_bme680.i2c_address = BME680_ADDR;
+
+    esp_err_t res = bme680_init(&dev_bme680);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing BME680 failed");
+        return res;
+    }
+
+    bme680_ready = true;
+    return ESP_OK;
+}
+
 ILI9341* get_ili9341() {
     if (!bsp_ready) return NULL;
     return &dev_ili9341;
@@ -218,4 +236,9 @@ ICE40* get_ice40() {
 BNO055* get_bno055() {
     if (!bno055_ready) return NULL;
     return &dev_bno055;
+}
+
+BNO055* get_bme680() {
+    if (!bme680_ready) return NULL;
+    return &dev_bme680;
 }
