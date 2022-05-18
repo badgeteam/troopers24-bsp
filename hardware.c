@@ -22,6 +22,7 @@ static bool bsp_ready    = false;
 static bool rp2040_ready = false;
 static bool ice40_ready  = false;
 static bool bno055_ready = false;
+static bool bme680_ready = false;
 
 esp_err_t ice40_get_done_wrapper(bool* done) {
     uint16_t  buttons;
@@ -238,7 +239,7 @@ BNO055* get_bno055() {
     return &dev_bno055;
 }
 
-BNO055* get_bme680() {
+BME680* get_bme680() {
     if (!bme680_ready) return NULL;
     return &dev_bme680;
 }
