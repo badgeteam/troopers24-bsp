@@ -139,4 +139,4 @@ BNO055* get_bno055();
  * \retval NULL           Device not available
  */
 
-BNO055* get_bme680();
+BME680* get_bme680();
