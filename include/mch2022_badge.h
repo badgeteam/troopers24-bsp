@@ -38,7 +38,7 @@
 
 // I2C bus
 #define I2C_BUS_SYS   0
-#define I2C_SPEED_SYS 8000  // 8 kHz
+#define I2C_SPEED_SYS 400000  // 400 kHz
 
 #define RP2040_ADDR 0x17  // RP2040 co-processor
 #define BNO055_ADDR 0x28  // BNO055 position sensor
