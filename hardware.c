@@ -7,7 +7,6 @@
 
 #include "managed_i2c.h"
 #include "rp2040.h"
-#include "sdcard.h"
 
 static const char* TAG = "hardware";
 
