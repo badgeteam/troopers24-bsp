@@ -24,6 +24,7 @@ static bool isScanning = false;
 
 #define WIFI_SORT_ERRCHECK(err) do {int res = (err); if(res) {ESP_LOGE(TAG, "WiFi connection error: %s", esp_err_to_name(res)); goto error; } } while(0)
 
+// Handles WiFi events required to stay connected.
 static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
         xEventGroupSetBits(wifiEventGroup, WIFI_STARTED_BIT);
@@ -36,7 +37,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
         xEventGroupClearBits(wifiEventGroup, WIFI_STARTED_BIT);
         ESP_LOGI(TAG, "WiFi station stop.");
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        if (retryCount < 3) {
+        if (maxRetries == WIFI_INFINITE_RETRIES || retryCount < maxRetries) {
             esp_wifi_connect();
             retryCount++;
             ESP_LOGI(TAG, "Retrying connection");
@@ -52,6 +53,7 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
     }
 }
 
+// Firt time initialisation of the WiFi stack.
 void wifi_init() {
     // Create an event group for WiFi things.
     wifiEventGroup = xEventGroupCreate();
@@ -75,6 +77,7 @@ void wifi_init() {
     ESP_ERROR_CHECK(esp_wifi_stop());
 }
 
+// Connect to a traditional username/password WiFi network.
 bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAuthmode, uint8_t aRetryMax) {
     // Set the retry counts.
     retryCount = 0;
@@ -114,6 +117,7 @@ bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAu
     return false;
 }
 
+// Connect to a WPA2 enterprise WiFi network.
 bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax) {
     retryCount = 0;
     maxRetries = aRetryMax;

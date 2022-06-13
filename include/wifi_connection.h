@@ -21,6 +21,9 @@ typedef enum {
 #define WIFI_THRESH_GOOD      -70
 #define WIFI_THRESH_VERY_GOOD -67
 
+// Retry forever.
+#define WIFI_INFINITE_RETRIES 255
+
 // Firt time initialisation of the WiFi stack.
 void wifi_init();
 
