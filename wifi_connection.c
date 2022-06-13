@@ -161,6 +161,12 @@ bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonId
     return false;
 }
 
+// Disconnect from WiFi and do not attempt to reconnect.
+void wifi_disconnect() {
+    maxRetries = 0;
+    esp_wifi_stop();
+}
+
 // Shows a nice info message describing an AP record.
 static inline void wifi_desc_record(wifi_ap_record_t *record) {
     // Make a string representation of BSSID.

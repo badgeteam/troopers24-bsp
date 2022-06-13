@@ -30,6 +30,9 @@ bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAu
 // Connect to a WPA2 enterprise WiFi network.
 bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax);
 
+// Disconnect from WiFi and do not attempt to reconnect.
+void wifi_disconnect();
+
 // Scan for WiFi networks.
 // Updates the APs pointer if non-null.
 // Returns the number of APs found.
