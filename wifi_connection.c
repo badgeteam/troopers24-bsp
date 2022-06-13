@@ -83,6 +83,11 @@ bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAu
     retryCount = 0;
     maxRetries = aRetryMax;
     
+    // Disable WiFi if it was active, reset event bits
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    xEventGroupClearBits(wifiEventGroup, 0xFF);
+    
     // Create a config.
     wifi_config_t wifi_config = {0};
     strncpy((char*) wifi_config.sta.ssid, aSsid, 32);
@@ -127,6 +132,11 @@ bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonId
         return false;
     }
     strncpy((char*) wifi_config.sta.ssid, aSsid, 32);
+    
+    // Disable WiFi if it was active, reset event bits
+    esp_wifi_disconnect();
+    esp_wifi_stop();
+    xEventGroupClearBits(wifiEventGroup, 0xFF);
     
     // Set WiFi config.
     WIFI_SORT_ERRCHECK(esp_wifi_set_mode(WIFI_MODE_STA) );
