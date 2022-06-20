@@ -8,9 +8,9 @@
 
 // Secure option.
 #define WIFI_MCH2022_SSID     "MCH2022"
-#define WIFI_MCH2022_USER     "mch"
-#define WIFI_MCH2022_IDENT    "mch"
-#define WIFI_MCH2022_PASSWORD "mch"
+#define WIFI_MCH2022_USER     "badge"
+#define WIFI_MCH2022_IDENT    "badge"
+#define WIFI_MCH2022_PASSWORD "badge"
 #define WIFI_MCH2022_AUTH     WIFI_AUTH_WPA2_ENTERPRISE
 #define WIFI_MCH2022_PHASE2   ESP_EAP_TTLS_PHASE2_PAP
 
