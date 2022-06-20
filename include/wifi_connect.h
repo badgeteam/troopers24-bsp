@@ -25,4 +25,5 @@
 #define WIFI_MCH2022_PHASE2   0
 
 bool wifi_connect_to_stored();
+void wifi_set_defaults();
 void wifi_disconnect_and_disable();
