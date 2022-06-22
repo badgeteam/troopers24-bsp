@@ -28,13 +28,33 @@ typedef enum {
 void wifi_init();
 
 // Connect to a traditional username/password WiFi network.
+// Will wait for the connection to be established.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+// Returns whether WiFi has successfully connected.
 bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAuthmode, uint8_t aRetryMax);
 
 // Connect to a WPA2 enterprise WiFi network.
+// Will wait for the connection to be established.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+// Returns whether WiFi has successfully connected.
 bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax);
+
+// Connect to a traditional username/password WiFi network.
+// Will return right away.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+void wifi_connect_async(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAuthmode, uint8_t aRetryMax);
+
+// Connect to a WPA2 enterprise WiFi network.
+// Will return right away.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+void wifi_connect_ent_async(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax);
 
 // Disconnect from WiFi and do not attempt to reconnect.
 void wifi_disconnect();
+
+// Awaits WiFi to be connected for at most `max_delay_millis` milliseconds or forever if it's 0.
+// Returns whether WiFi has successfully connected.
+bool wifi_await(uint64_t max_delay_millis);
 
 // Test whether WiFi is currently connected.
 bool wifi_is_connected();

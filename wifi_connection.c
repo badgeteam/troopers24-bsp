@@ -78,7 +78,27 @@ void wifi_init() {
 }
 
 // Connect to a traditional username/password WiFi network.
+// Will wait for the connection to be established.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+// Returns whether WiFi has successfully connected.
 bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAuthmode, uint8_t aRetryMax) {
+    wifi_connect_async(aSsid, aPassword, aAuthmode, aRetryMax);
+    return wifi_await(0);
+}
+
+// Connect to a WPA2 enterprise WiFi network.
+// Will wait for the connection to be established.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+// Returns whether WiFi has successfully connected.
+bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax) {
+    wifi_connect_ent_async(aSsid, aIdent, aAnonIdent, aPassword, phase2, aRetryMax);
+    return wifi_await(0);
+}
+
+// Connect to a traditional username/password WiFi network.
+// Will return right away.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+void wifi_connect_async(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAuthmode, uint8_t aRetryMax) {
     // Set the retry counts.
     retryCount = 0;
     maxRetries = aRetryMax;
@@ -104,26 +124,14 @@ bool wifi_connect(const char* aSsid, const char* aPassword, wifi_auth_mode_t aAu
     
     ESP_LOGI(TAG, "Connecting to WiFi...");
     
-    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
-     * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
-    EventBits_t bits = xEventGroupWaitBits(wifiEventGroup, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually happened. */
-    if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "Connected to WiFi");
-        return true;
-    } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGE(TAG, "Failed to connect");
-        WIFI_SORT_ERRCHECK(esp_wifi_stop());
-    } else {
-        ESP_LOGE(TAG, "Unknown event received while waiting on connection");
-        WIFI_SORT_ERRCHECK(esp_wifi_stop());
-    }
     error:
-    return false;
+    return;
 }
 
 // Connect to a WPA2 enterprise WiFi network.
-bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax) {
+// Will return right away.
+// Will try at most `aRetryMax` times, or forever if it's WIFI_INFINITE_RETRIES.
+void wifi_connect_ent_async(const char* aSsid, const char *aIdent, const char *aAnonIdent, const char* aPassword, esp_eap_ttls_phase2_types phase2, uint8_t aRetryMax) {
     retryCount = 0;
     maxRetries = aRetryMax;
     wifi_config_t wifi_config = {0};
@@ -157,28 +165,38 @@ bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonId
     ESP_LOGI(TAG, "Connecting to '%s' as '%s'/'%s': %s", aSsid, aIdent, aAnonIdent, aPassword);
     ESP_LOGI(TAG, "Phase2 mode: %d", phase2);
     
-    /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or connection failed for the maximum
-     * number of re-tries (WIFI_FAIL_BIT). The bits are set by event_handler() (see above) */
-    EventBits_t bits = xEventGroupWaitBits(wifiEventGroup, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
-    /* xEventGroupWaitBits() returns the bits before the call returned, hence we can test which event actually happened. */
-    if (bits & WIFI_CONNECTED_BIT) {
-        ESP_LOGI(TAG, "Connected to WiFi");
-        return true;
-    } else if (bits & WIFI_FAIL_BIT) {
-        ESP_LOGE(TAG, "Failed to connect");
-        WIFI_SORT_ERRCHECK(esp_wifi_stop());
-    } else {
-        ESP_LOGE(TAG, "Unknown event received while waiting on connection");
-        WIFI_SORT_ERRCHECK(esp_wifi_stop());
-    }
     error:
-    return false;
+    return;
 }
 
 // Disconnect from WiFi and do not attempt to reconnect.
 void wifi_disconnect() {
     maxRetries = 0;
     esp_wifi_stop();
+}
+
+// Awaits WiFi to be connected for at most `max_delay_millis` milliseconds.
+bool wifi_await(uint64_t max_delay_millis) {
+    if (!max_delay_millis) max_delay_millis = portMAX_DELAY;
+    else max_delay_millis = pdMS_TO_TICKS(max_delay_millis);
+    // Await an update from the event handler.
+    EventBits_t bits = xEventGroupWaitBits(wifiEventGroup, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, 0, 0, max_delay_millis);
+    
+    if (bits & WIFI_CONNECTED_BIT) {
+        // WiFi successfully connected.
+        ESP_LOGI(TAG, "Connected to WiFi");
+        return true;
+    } else if (bits & WIFI_FAIL_BIT) {
+        // WiFi failed to connect (out of retries).
+        ESP_LOGE(TAG, "Failed to connect");
+        WIFI_SORT_ERRCHECK(esp_wifi_stop());
+    } else {
+        // Other error.
+        ESP_LOGE(TAG, "Unknown event received while waiting on connection");
+        WIFI_SORT_ERRCHECK(esp_wifi_stop());
+    }
+    error:
+    return false;
 }
 
 // Test whether WiFi is currently connected.
