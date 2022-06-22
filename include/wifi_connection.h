@@ -36,6 +36,9 @@ bool wifi_connect_ent(const char* aSsid, const char *aIdent, const char *aAnonId
 // Disconnect from WiFi and do not attempt to reconnect.
 void wifi_disconnect();
 
+// Test whether WiFi is currently connected.
+bool wifi_is_connected();
+
 // Scan for WiFi networks.
 // Updates the APs pointer if non-null.
 // Returns the number of APs found.

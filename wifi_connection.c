@@ -181,6 +181,14 @@ void wifi_disconnect() {
     esp_wifi_stop();
 }
 
+// Test whether WiFi is currently connected.
+bool wifi_is_connected() {
+    // This information is stored in the event group bits.
+    // Simply extract with bitwise and.
+    uint32_t bits = xEventGroupGetBits(wifiEventGroup) & WIFI_CONNECTED_BIT;
+    return (bits & WIFI_CONNECTED_BIT);
+}
+
 // Shows a nice info message describing an AP record.
 static inline void wifi_desc_record(wifi_ap_record_t *record) {
     // Make a string representation of BSSID.
