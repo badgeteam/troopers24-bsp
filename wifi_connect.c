@@ -16,7 +16,6 @@ static const char *TAG = "wifi_connect";
 
 bool wifi_connect_to_stored() {
     bool result = false;
-    bool setdefault_tried = false;
     // Open NVS.
     nvs_handle_t handle;
     nvs_open("system", NVS_READWRITE, &handle);
@@ -30,8 +29,6 @@ bool wifi_connect_to_stored() {
     
     // Read NVS.
     esp_err_t res;
-    start:
-    // Read SSID.
     res = nvs_get_str(handle, "wifi.ssid", NULL, &len);
     if (res) goto errcheck;
     ssid = malloc(len);
@@ -68,14 +65,12 @@ bool wifi_connect_to_stored() {
             if (res) goto errcheck;
         }
     }
-    // Read password.
     res = nvs_get_str(handle, "wifi.password", NULL, &len);
     if (res) goto errcheck;
     password = malloc(len);
     res = nvs_get_str(handle, "wifi.password", password, &len);
     if (res) goto errcheck;
-    
-    // Close NVS.
+
     nvs_close(handle);
     
     // Open the appropriate connection.
@@ -87,17 +82,7 @@ bool wifi_connect_to_stored() {
     
     errcheck:
     if (res == ESP_ERR_NVS_NOT_FOUND || res == ESP_ERR_NVS_NOT_INITIALIZED) {
-        if (setdefault_tried) {
-            // Oh well, that didn't work.
-            ESP_LOGE(TAG, "Failed to set default settings.");
-        } else {
-            // When NVS is not initialised.
-            ESP_LOGI(TAG, "WiFi settings not stored in NVS, setting defaults.");
-            wifi_set_defaults();
-            // Try again, but only once.
-            setdefault_tried = true;
-            goto start;
-        }
+        ESP_LOGE(TAG, "Failed to read WiFi configuration from NVS");
     } else if (res) {
         // Other errors.
         ESP_LOGE(TAG, "Error connecting to WiFi: %s", esp_err_to_name(res));
@@ -110,27 +95,6 @@ bool wifi_connect_to_stored() {
     if (password) free(password);
     
     return result;
-}
-
-void wifi_set_defaults() {
-    nvs_handle_t handle;
-    esp_err_t res = nvs_open("system", NVS_READWRITE, &handle);
-    if (res) {
-        ESP_LOGE(TAG, "Can't set WiFi to default: %s", esp_err_to_name(res));
-        nvs_close(handle);
-        return;
-    }
-    nvs_set_u8 (handle, "wifi.authmode",   WIFI_MCH2022_AUTH);
-    nvs_set_u8 (handle, "wifi.phase2",     WIFI_MCH2022_PHASE2);
-    nvs_set_str(handle, "wifi.ssid",       WIFI_MCH2022_SSID);
-    nvs_set_str(handle, "wifi.username",   WIFI_MCH2022_USER);
-    nvs_set_str(handle, "wifi.anon_ident", WIFI_MCH2022_IDENT);
-    nvs_set_str(handle, "wifi.password",   WIFI_MCH2022_PASSWORD);
-    res = nvs_commit(handle);
-    if (res) {
-        ESP_LOGE(TAG, "Can't set WiFi to default: %s", esp_err_to_name(res));
-    }
-    nvs_close(handle);
 }
 
 void wifi_disconnect_and_disable() {
