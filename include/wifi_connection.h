@@ -24,6 +24,8 @@ typedef enum {
 // Retry forever.
 #define WIFI_INFINITE_RETRIES 255
 
+esp_netif_ip_info_t* wifi_get_ip_info();
+
 // First time initialisation of the WiFi stack.
 // Initialises internal resources and ESP32 WiFi.
 // Use this if nothing else initialises ESP32 WiFi.

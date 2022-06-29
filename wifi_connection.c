@@ -22,6 +22,8 @@ static uint8_t retryCount = 0;
 static uint8_t maxRetries = 3;
 static bool isScanning = false;
 
+static esp_netif_ip_info_t ip_info = {0};
+
 #define WIFI_SORT_ERRCHECK(err) do {int res = (err); if(res) {ESP_LOGE(TAG, "WiFi connection error: %s", esp_err_to_name(res)); goto error; } } while(0)
 
 // Handles WiFi events required to stay connected.
@@ -47,10 +49,17 @@ static void event_handler(void* arg, esp_event_base_t event_base, int32_t event_
         }
     } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t* event = (ip_event_got_ip_t*) event_data;
-        ESP_LOGI(TAG, "Got ip:" IPSTR, IP2STR(&event->ip_info.ip));
+        memcpy(&ip_info, &event->ip_info, sizeof(ip_info));
+        ESP_LOGI(TAG, "IP          : " IPSTR, IP2STR(&event->ip_info.ip));
+        ESP_LOGI(TAG, "Netmask     : " IPSTR, IP2STR(&event->ip_info.netmask));
+        ESP_LOGI(TAG, "Gateway     : " IPSTR, IP2STR(&event->ip_info.gw));
         retryCount = 0;
         xEventGroupSetBits(wifiEventGroup, WIFI_CONNECTED_BIT);
     }
+}
+
+esp_netif_ip_info_t* wifi_get_ip_info() {
+    return &ip_info;
 }
 
 // Firt time initialisation of the WiFi stack.
