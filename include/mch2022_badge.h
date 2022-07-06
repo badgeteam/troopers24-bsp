@@ -15,9 +15,9 @@
 #define GPIO_UART_TX     1
 #define GPIO_SD_D0       2
 #define GPIO_UART_RX     3
-#define GPIO_I2S_LR      4
+#define GPIO_I2S_CLK     4
 #define GPIO_LED_DATA    5
-#define GPIO_I2S_CLK     12
+#define GPIO_I2S_LR      12
 #define GPIO_I2S_DATA    13
 #define GPIO_SD_CLK      14
 #define GPIO_SD_CMD      15
