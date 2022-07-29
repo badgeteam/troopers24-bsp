@@ -11,4 +11,5 @@ idf_component_register(
         "mch2022-rp2040"
         "wpa_supplicant"
         "nvs_flash"
+        "pax-graphics"
 )

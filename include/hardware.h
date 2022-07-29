@@ -10,6 +10,7 @@
 #include "mch2022_badge.h"
 #include "rp2040.h"
 #include "bme680.h"
+#include "pax_gfx.h"
 
 /** \brief Initialize basic board support
  *
@@ -96,6 +97,9 @@ esp_err_t bsp_bme680_init();
  */
 
 ILI9341* get_ili9341();
+
+esp_err_t display_flush();
+pax_buf_t* get_pax_buffer();
 
 /** \brief Fetch a handle for the RP2040 co-processor hardware component
  *

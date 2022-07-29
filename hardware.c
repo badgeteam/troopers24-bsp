@@ -7,6 +7,7 @@
 
 #include "managed_i2c.h"
 #include "rp2040.h"
+#include "pax_gfx.h"
 
 static const char* TAG = "hardware";
 
@@ -24,7 +25,9 @@ static bool ice40_ready  = false;
 static bool bno055_ready = false;
 static bool bme680_ready = false;
 
-xSemaphoreHandle i2c_semaphore = NULL;
+static xSemaphoreHandle i2c_semaphore = NULL;
+
+static pax_buf_t pax_buffer;
 
 esp_err_t ice40_get_done_wrapper(bool* done) {
     uint16_t  buttons;
@@ -138,6 +141,8 @@ esp_err_t bsp_init() {
         ESP_LOGE(TAG, "Initializing LCD failed");
         return res;
     }
+    
+    pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
 
     bsp_ready = true;
     return ESP_OK;
@@ -250,6 +255,16 @@ esp_err_t bsp_bme680_init() {
 ILI9341* get_ili9341() {
     if (!bsp_ready) return NULL;
     return &dev_ili9341;
+}
+
+esp_err_t display_flush() {
+    if (!bsp_ready) return ESP_FAIL;
+    return ili9341_write(&dev_ili9341, pax_buffer.buf);
+}
+
+pax_buf_t* get_pax_buffer() {
+    if (!bsp_ready) return NULL;
+    return &pax_buffer;
 }
 
 RP2040* get_rp2040() {
