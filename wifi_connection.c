@@ -127,8 +127,8 @@ void wifi_connect_async(const char* aSsid, const char* aPassword, wifi_auth_mode
     
     // Create a config.
     wifi_config_t wifi_config = {0};
-    strncpy((char*) wifi_config.sta.ssid, aSsid, 32);
-    strncpy((char*) wifi_config.sta.password, aPassword, 64);
+    strncpy((char*) wifi_config.sta.ssid, aSsid, 31);
+    strncpy((char*) wifi_config.sta.password, aPassword, 63);
     wifi_config.sta.threshold.authmode = aAuthmode;
     
     // Set WiFi config.
@@ -156,7 +156,7 @@ void wifi_connect_ent_async(const char* aSsid, const char *aIdent, const char *a
         ESP_LOGE(TAG, "SSID is too long (%zu > 32)!", strlen(aSsid));
         return false;
     }
-    strncpy((char*) wifi_config.sta.ssid, aSsid, 32);
+    strncpy((char*) wifi_config.sta.ssid, aSsid, 31);
     
     // Disable WiFi if it was active, reset event bits
     esp_wifi_disconnect();
