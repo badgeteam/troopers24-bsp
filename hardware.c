@@ -143,6 +143,7 @@ esp_err_t bsp_init() {
     }
     
     pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
+    pax_buf_reversed(&pax_buffer, true);
 
     bsp_ready = true;
     return ESP_OK;
@@ -259,7 +260,13 @@ ILI9341* get_ili9341() {
 
 esp_err_t display_flush() {
     if (!bsp_ready) return ESP_FAIL;
-    return ili9341_write(&dev_ili9341, pax_buffer.buf);
+    if (!pax_is_dirty(&pax_buffer)) return ESP_OK;
+    //ESP_LOGI(TAG, "Flush %u to %u\n", pax_buffer.dirty_y0, pax_buffer.dirty_y1);
+    uint8_t* buffer = (uint8_t*)(pax_buffer.buf);
+    esp_err_t res = ili9341_write_partial_direct(&dev_ili9341, &buffer[pax_buffer.dirty_y0 * ILI9341_WIDTH * 2], 0, pax_buffer.dirty_y0, ILI9341_WIDTH, pax_buffer.dirty_y1 - pax_buffer.dirty_y0 + 1);
+    if (res != ESP_OK) return res;
+    pax_mark_clean(&pax_buffer);
+    return res;
 }
 
 pax_buf_t* get_pax_buffer() {
