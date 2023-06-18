@@ -1,4 +1,4 @@
-# ESP32 component: MCH2022 badge board support package
+# ESP32 component: TROOPERS23 badge board support package
 
 An ESP-IDF component for managing the hardware components on the MCH2022 badge.
 
