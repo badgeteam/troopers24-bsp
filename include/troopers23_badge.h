@@ -11,7 +11,7 @@
 
 #pragma once
 
-#define REV 2
+#define REV 1
 
 #define NUM_LEDS 9
 
