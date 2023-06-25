@@ -5,6 +5,7 @@
 #include <driver/spi_master.h>
 #include <esp_log.h>
 
+#include "controller.h"
 #include "managed_i2c.h"
 #include "pax_gfx.h"
 
@@ -20,6 +21,7 @@ static Keyboard dev_keyboard = {
     .addr_keyboard2 = PCA555A_2_ADDR,
 };
 static PCA9555* dev_io_expander = {0};
+static Controller dev_controller = {0};
 
 static bool bsp_ready = false;
 
@@ -138,6 +140,18 @@ esp_err_t bsp_init() {
         return res;
     }
 
+
+    dev_controller.i2c_addr = CONTROLLER_ADDRESS;
+    dev_controller.i2c_semaphore = i2c_semaphore;
+    dev_controller.need_init = false;
+    dev_controller.poll_delay = 50;
+    dev_controller.queue = dev_keyboard.queue;
+    res = controller_init(&dev_controller);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing controller failed");
+        return res;
+    }
+
 //    uint8_t msg[] = { 0x41, 0x42, 0x43 };
 //    while(1) {
 //        driver_cc1200_tx_packet(msg, 3);
@@ -166,6 +180,11 @@ Keyboard* get_keyboard() {
 esp_err_t clear_keyboard_queue() {
     xQueueReset(dev_keyboard.queue);
     return ESP_OK;
+}
+
+Controller* get_controller() {
+    if (!bsp_ready) return NULL;
+    return &dev_controller;
 }
 
 esp_err_t display_flush() {

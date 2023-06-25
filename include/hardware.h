@@ -4,12 +4,13 @@
 #include <esp_err.h>
 #include <sdkconfig.h>
 
+#include "cc1200_troopers.h"
+#include "controller.h"
+#include "driver_cc1200.h"
 #include "ili9341.h"
 #include "keyboard.h"
-#include "troopers23_badge.h"
 #include "pax_gfx.h"
-#include "cc1200_troopers.h"
-#include "driver_cc1200.h"
+#include "troopers23_badge.h"
 
 /** \brief Initialize basic board support
  *
@@ -32,6 +33,8 @@ ILI9341* get_ili9341();
 PCA9555 * get_io_expander();
 
 Keyboard* get_keyboard();
+
+Controller* get_controller();
 
 esp_err_t clear_keyboard_queue();
 
