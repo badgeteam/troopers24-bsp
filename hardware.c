@@ -5,23 +5,26 @@
 #include <driver/spi_master.h>
 #include <esp_log.h>
 
-#include "controller.h"
+#include "../troopers23-efuse/include/efuse.h"
 #include "managed_i2c.h"
 #include "pax_gfx.h"
+#include "rainbow.h"
 
 static const char* TAG = "hardware";
 
 static ILI9341  dev_ili9341  = {0};
 static CC1200   cc1200       = {0};
 static Keyboard dev_keyboard = {
-    .i2c_bus        = I2C_BUS,
-    .intr_pin       = GPIO_INT_KEY,
-    .addr_front     = PCA555A_0_ADDR,
-    .addr_keyboard1 = PCA555A_1_ADDR,
-    .addr_keyboard2 = PCA555A_2_ADDR,
+    .i2c_bus          = I2C_BUS,
+    .intr_pin         = GPIO_INT_KEY,
+    .addr_front       = PCA555A_0_ADDR,
+    .addr_keyboard1   = PCA555A_1_ADDR,
+    .addr_keyboard2   = PCA555A_2_ADDR,
+    .pin_sao_presence = IO_SAO_GPIO2,
 };
 static PCA9555* dev_io_expander = {0};
 static Controller dev_controller = {0};
+static KTD2052 dev_ktd2052 = {0};
 
 static bool bsp_ready = false;
 
@@ -29,6 +32,42 @@ static xSemaphoreHandle i2c_semaphore = NULL;
 static xSemaphoreHandle spi_semaphore = NULL;
 
 static pax_buf_t pax_buffer;
+
+static inline void sao_presence_change(bool connected) {
+    esp_err_t res;
+    if (connected) {
+        // Shitty was just connected
+        ESP_LOGI(TAG, "SAO: connected");
+        int retry = 5;
+
+        // Shot debounce
+        while (!ktd2052_connected(&dev_ktd2052) && retry-- > 0) {
+            vTaskDelay(pdMS_TO_TICKS(200));
+        }
+
+        uint16_t id = badge_id();
+
+        res = ktd2052_init(&dev_ktd2052);
+        if (res != ESP_OK) goto err;
+
+        res = ktd2052_set_color_pax(&dev_ktd2052, 1, rainbow(id, NUM_BADGES));
+        if (res != ESP_OK) goto err;
+
+        res = ktd2052_set_color_pax(&dev_ktd2052, 2, rainbow(id + (NUM_BADGES / 8.), NUM_BADGES));
+        if (res != ESP_OK) goto err;
+
+        res = ktd2052_set_color_pax(&dev_ktd2052, 3, rainbow(id + 3. * (NUM_BADGES / 8.), NUM_BADGES));
+        if (res != ESP_OK) goto err;
+
+        res = ktd2052_set_color_pax(&dev_ktd2052, 4, rainbow(id + 6. * (NUM_BADGES / 8.), NUM_BADGES));
+        if (res != ESP_OK) goto err;
+    } else {
+        ESP_LOGI(TAG, "SAO: disconnected");
+    }
+    return;
+err:
+    ESP_LOGE(TAG, "Error in communication with LED controller: %d", res);
+}
 
 static esp_err_t _bus_init() {
     esp_err_t res;
@@ -99,13 +138,27 @@ esp_err_t bsp_init() {
     res = _bus_init();
     if (res != ESP_OK) return res;
 
+    // SAO LED controller
+    dev_ktd2052.i2c_addr = KTD2052_A_ADDRESS;
+    dev_ktd2052.i2c_semaphore = i2c_semaphore;
+    res = ktd2052_init(&dev_ktd2052);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing ktd2052 failed");
+        return res;
+    }
+
     // Keyboard
-    dev_keyboard.i2c_semaphore = i2c_semaphore;
-    res                        = keyboard_init(&dev_keyboard);
+    dev_keyboard.i2c_semaphore   = i2c_semaphore;
+    dev_keyboard.sao_presence_cb = &sao_presence_change;
+    res                          = keyboard_init(&dev_keyboard);
     if (res != ESP_OK) return res;
 
     // IO expander
     dev_io_expander = dev_keyboard.front;
+//    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
+//    if (!res) {
+//        return res;
+//    }
 
     // LCD display
     dev_ili9341.spi_bus               = SPI_BUS;
@@ -185,6 +238,11 @@ esp_err_t clear_keyboard_queue() {
 Controller* get_controller() {
     if (!bsp_ready) return NULL;
     return &dev_controller;
+}
+
+KTD2052* get_ktd2052() {
+    if (!bsp_ready) return NULL;
+    return &dev_ktd2052;
 }
 
 esp_err_t display_flush() {

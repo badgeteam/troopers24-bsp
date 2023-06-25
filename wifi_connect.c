@@ -75,9 +75,9 @@ bool wifi_connect_to_stored() {
     
     // Open the appropriate connection.
     if (use_ent) {
-        result = wifi_connect_ent(ssid, ident, anon_ident, password, phase2, 3);
+        result = wifi_connect_ent(ssid, ident, anon_ident, password, phase2, 2);
     } else {
-        result = wifi_connect(ssid, password, authmode, 3);
+        result = wifi_connect(ssid, password, authmode, 2);
     }
     
     errcheck:

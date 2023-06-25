@@ -9,6 +9,7 @@
 #include "driver_cc1200.h"
 #include "ili9341.h"
 #include "keyboard.h"
+#include "ktd2052.h"
 #include "pax_gfx.h"
 #include "troopers23_badge.h"
 
@@ -35,6 +36,8 @@ PCA9555 * get_io_expander();
 Keyboard* get_keyboard();
 
 Controller* get_controller();
+
+KTD2052* get_ktd2052();
 
 esp_err_t clear_keyboard_queue();
 
