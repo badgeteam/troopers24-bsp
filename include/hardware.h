@@ -27,6 +27,8 @@
  * returned by SDK functions.
  */
 
+void controller_led_callback();
+
 esp_err_t bsp_init();
 
 ILI9341* get_ili9341();

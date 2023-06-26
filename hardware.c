@@ -78,7 +78,7 @@ err:
     ESP_LOGE(TAG, "Error in communication with LED controller: %d", res);
 }
 
-static inline void controller_led_callback() {
+void controller_led_callback() {
     uint8_t buf[8];
     esp_fill_random(buf, 8);
     uint16_t a = (((uint16_t)buf[0] << 8) + buf[1]) % NUM_BADGES;
@@ -218,7 +218,6 @@ esp_err_t bsp_init() {
     dev_controller.need_init = false;
     dev_controller.poll_delay = 50;
     dev_controller.queue = dev_keyboard.queue;
-    dev_controller.led_cb = &controller_led_callback;
     res = controller_init(&dev_controller);
     if (res != ESP_OK) {
         ESP_LOGE(TAG, "Initializing controller failed");
