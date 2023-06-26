@@ -33,6 +33,24 @@ static xSemaphoreHandle spi_semaphore = NULL;
 
 static pax_buf_t pax_buffer;
 
+esp_err_t sao_set_leds(uint16_t a, uint16_t b, uint16_t c, uint16_t d) {
+    esp_err_t res;
+
+    res = ktd2052_set_color_pax(&dev_ktd2052, 1, rainbow(a, NUM_BADGES));
+    if (res != ESP_OK) return res;
+
+    res = ktd2052_set_color_pax(&dev_ktd2052, 2, rainbow(b, NUM_BADGES));
+    if (res != ESP_OK) return res;
+
+    res = ktd2052_set_color_pax(&dev_ktd2052, 3, rainbow(c, NUM_BADGES));
+    if (res != ESP_OK) return res;
+
+    res = ktd2052_set_color_pax(&dev_ktd2052, 4, rainbow(d, NUM_BADGES));
+    if (res != ESP_OK) return res;
+
+    return ESP_OK;
+}
+
 static inline void sao_presence_change(bool connected) {
     esp_err_t res;
     if (connected) {
@@ -50,16 +68,7 @@ static inline void sao_presence_change(bool connected) {
         res = ktd2052_init(&dev_ktd2052);
         if (res != ESP_OK) goto err;
 
-        res = ktd2052_set_color_pax(&dev_ktd2052, 1, rainbow(id, NUM_BADGES));
-        if (res != ESP_OK) goto err;
-
-        res = ktd2052_set_color_pax(&dev_ktd2052, 2, rainbow(id + (NUM_BADGES / 8.), NUM_BADGES));
-        if (res != ESP_OK) goto err;
-
-        res = ktd2052_set_color_pax(&dev_ktd2052, 3, rainbow(id + 3. * (NUM_BADGES / 8.), NUM_BADGES));
-        if (res != ESP_OK) goto err;
-
-        res = ktd2052_set_color_pax(&dev_ktd2052, 4, rainbow(id + 6. * (NUM_BADGES / 8.), NUM_BADGES));
+        res = sao_set_leds(id, id * (NUM_BADGES / 4.), id + 2. * (NUM_BADGES / 4.), id + 3. * (NUM_BADGES / 4.));
         if (res != ESP_OK) goto err;
     } else {
         ESP_LOGI(TAG, "SAO: disconnected");
@@ -67,6 +76,16 @@ static inline void sao_presence_change(bool connected) {
     return;
 err:
     ESP_LOGE(TAG, "Error in communication with LED controller: %d", res);
+}
+
+static inline void controller_led_callback() {
+    uint8_t buf[8];
+    esp_fill_random(buf, 8);
+    uint16_t a = (((uint16_t)buf[0] << 8) + buf[1]) % NUM_BADGES;
+    uint16_t b = (((uint16_t)buf[2] << 8) + buf[3]) % NUM_BADGES;
+    uint16_t c = (((uint16_t)buf[4] << 8) + buf[5]) % NUM_BADGES;
+    uint16_t d = (((uint16_t)buf[6] << 8) + buf[7]) % NUM_BADGES;
+    sao_set_leds(a, b, c, d);
 }
 
 static esp_err_t _bus_init() {
@@ -199,6 +218,7 @@ esp_err_t bsp_init() {
     dev_controller.need_init = false;
     dev_controller.poll_delay = 50;
     dev_controller.queue = dev_keyboard.queue;
+    dev_controller.led_cb = &controller_led_callback;
     res = controller_init(&dev_controller);
     if (res != ESP_OK) {
         ESP_LOGE(TAG, "Initializing controller failed");
