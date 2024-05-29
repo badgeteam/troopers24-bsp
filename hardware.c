@@ -13,13 +13,10 @@
 static const char* TAG = "hardware";
 
 static ILI9341  dev_ili9341  = {0};
-static CC1200   cc1200       = {0};
 static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
     .intr_pin         = GPIO_INT_KEY,
-    .addr_front       = PCA555A_0_ADDR,
-    .addr_keyboard1   = PCA555A_1_ADDR,
-    .addr_keyboard2   = PCA555A_2_ADDR,
+    .pca_addr         = PCA555A_0_ADDR,
     .pin_sao_presence = IO_SAO_GPIO2,
 };
 static PCA9555* dev_io_expander = {0};
@@ -63,13 +60,17 @@ static inline void sao_presence_change(bool connected) {
             vTaskDelay(pdMS_TO_TICKS(200));
         }
 
-        uint16_t id = badge_id();
+        if (retry > 0) {
+            uint16_t id = badge_id();
 
-        res = ktd2052_init(&dev_ktd2052);
-        if (res != ESP_OK) goto err;
+            res = ktd2052_init(&dev_ktd2052);
+            if (res != ESP_OK) goto err;
 
-        res = sao_set_leds(id, id * (NUM_BADGES / 4.), id + 2. * (NUM_BADGES / 4.), id + 3. * (NUM_BADGES / 4.));
-        if (res != ESP_OK) goto err;
+            res = sao_set_leds(id, id * (NUM_BADGES / 4.), id + 2. * (NUM_BADGES / 4.), id + 3. * (NUM_BADGES / 4.));
+            if (res != ESP_OK) goto err;
+        } else {
+            ESP_LOGI(TAG, "SAO: didn't identify TROOPERS23 SAO");
+        }
     } else {
         ESP_LOGI(TAG, "SAO: disconnected");
     }
@@ -166,19 +167,6 @@ esp_err_t bsp_init() {
         return res;
     }
 
-    // Keyboard
-    dev_keyboard.i2c_semaphore   = i2c_semaphore;
-    dev_keyboard.sao_presence_cb = &sao_presence_change;
-    res                          = keyboard_init(&dev_keyboard);
-    if (res != ESP_OK) return res;
-
-    // IO expander
-    dev_io_expander = dev_keyboard.front;
-//    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
-//    if (!res) {
-//        return res;
-//    }
-
     // LCD display
     dev_ili9341.spi_bus               = SPI_BUS;
     dev_ili9341.pin_cs                = GPIO_SPI_CS_LCD;
@@ -200,17 +188,18 @@ esp_err_t bsp_init() {
     pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
 
-    cc1200.spi_bus   = SPI_BUS;
-    cc1200.pin_cs    = GPIO_SPI_CS_RADIO;
-    cc1200.pin_intr  = GPIO_INT_RADIO;
-    cc1200.spi_speed = 20000000;  // 20MHz
-    cc1200.spi_semaphore = spi_semaphore;
+    // Keyboard
+    dev_keyboard.i2c_semaphore   = i2c_semaphore;
+    dev_keyboard.sao_presence_cb = &sao_presence_change;
+    res                          = keyboard_init(&dev_keyboard);
+    if (res != ESP_OK) return res;
 
-    res = cc1200_init(&cc1200);
-    if (res != ESP_OK) {
-        ESP_LOGE(TAG, "Initializing CC1200 failed");
-        return res;
-    }
+    // IO expander
+    dev_io_expander = dev_keyboard.pca;
+    //    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
+    //    if (!res) {
+    //        return res;
+    //    }
 
 
     dev_controller.i2c_addr = CONTROLLER_ADDRESS;
@@ -223,12 +212,6 @@ esp_err_t bsp_init() {
         ESP_LOGE(TAG, "Initializing controller failed");
         return res;
     }
-
-//    uint8_t msg[] = { 0x41, 0x42, 0x43 };
-//    while(1) {
-//        driver_cc1200_tx_packet(msg, 3);
-//        vTaskDelay(2000 / portTICK_PERIOD_MS);
-//    }
 
     bsp_ready = true;
     return ESP_OK;

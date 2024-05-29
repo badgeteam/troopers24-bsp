@@ -11,7 +11,6 @@ idf_component_register(
         "wpa_supplicant"
         "nvs_flash"
         "pax-graphics"
-        "spi-cc1200"
         "i2c-controller"
         "i2c-ktd2052"
 )

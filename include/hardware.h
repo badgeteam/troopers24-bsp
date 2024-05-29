@@ -4,9 +4,7 @@
 #include <esp_err.h>
 #include <sdkconfig.h>
 
-#include "cc1200_troopers.h"
 #include "controller.h"
-#include "driver_cc1200.h"
 #include "ili9341.h"
 #include "keyboard.h"
 #include "ktd2052.h"
