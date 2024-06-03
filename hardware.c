@@ -5,14 +5,20 @@
 #include <driver/spi_master.h>
 #include <esp_log.h>
 
-#include "../troopers23-efuse/include/efuse.h"
+#include "../troopers24-efuse/include/efuse.h"
 #include "managed_i2c.h"
 #include "pax_gfx.h"
 #include "rainbow.h"
 
 static const char* TAG = "hardware";
 
+#define TR24
+
+#ifdef TR23
 static ILI9341  dev_ili9341  = {0};
+#else
+static ST77XX  dev_st77xx  = {0};
+#endif
 static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
     .intr_pin         = GPIO_INT_KEY,
@@ -167,6 +173,7 @@ esp_err_t bsp_init() {
         return res;
     }
 
+#ifdef TR23
     // LCD display
     dev_ili9341.spi_bus               = SPI_BUS;
     dev_ili9341.pin_cs                = GPIO_SPI_CS_LCD;
@@ -187,6 +194,28 @@ esp_err_t bsp_init() {
 
     pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
+#else
+    // LCD display
+    dev_st77xx.spi_bus               = SPI_BUS;
+    dev_st77xx.pin_cs                = GPIO_SPI_CS_LCD;
+    dev_st77xx.pin_dcx               = GPIO_SPI_DC_LCD;
+    dev_st77xx.pin_reset             = GPIO_LCD_RESET;
+    dev_st77xx.rotation              = 1;
+    dev_st77xx.color_mode            = true;      // Blue and red channels are swapped
+    dev_st77xx.spi_speed             = 20000000;  // 20MHz
+    dev_st77xx.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
+    dev_st77xx.spi_semaphore = spi_semaphore;
+    dev_st77xx.reset_external_pullup = false;
+
+    res = st77xx_init(&dev_st77xx);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing LCD failed");
+        return res;
+    }
+
+    pax_buf_init(&pax_buffer, NULL, ST77XX_WIDTH, ST77XX_HEIGHT, PAX_BUF_16_565RGB);
+    pax_buf_reversed(&pax_buffer, true);
+#endif
 
     // Keyboard
     dev_keyboard.i2c_semaphore   = i2c_semaphore;
@@ -217,12 +246,19 @@ esp_err_t bsp_init() {
     return ESP_OK;
 }
 
+#ifdef TR23
 ILI9341* get_ili9341() {
     if (!bsp_ready) return NULL;
     return &dev_ili9341;
 }
+#else
+ST77XX* get_st77xx() {
+    if (!bsp_ready) return NULL;
+    return &dev_st77xx;
+}
+#endif
 
-PCA9555 * get_io_expander() {
+PCA9555* get_io_expander() {
     if (!bsp_ready) return NULL;
     return dev_io_expander;
 }
@@ -252,8 +288,13 @@ esp_err_t display_flush() {
     if (!pax_is_dirty(&pax_buffer)) return ESP_OK;
     // ESP_LOGI(TAG, "Flush %u to %u\n", pax_buffer.dirty_y0, pax_buffer.dirty_y1);
     uint8_t*  buffer = (uint8_t*) (pax_buffer.buf);
+#ifdef TR23
     esp_err_t res    = ili9341_write_partial_direct(&dev_ili9341, &buffer[pax_buffer.dirty_y0 * ILI9341_WIDTH * 2], 0, pax_buffer.dirty_y0, ILI9341_WIDTH,
                                                     pax_buffer.dirty_y1 - pax_buffer.dirty_y0 + 1);
+#else
+    esp_err_t res    = st77xx_write_partial_direct(&dev_st77xx, &buffer[pax_buffer.dirty_y0 * ST77XX_WIDTH * 2], 0, pax_buffer.dirty_y0, ST77XX_WIDTH,
+                                                    pax_buffer.dirty_y1 - pax_buffer.dirty_y0 + 1);
+#endif
     if (res != ESP_OK) return res;
     pax_mark_clean(&pax_buffer);
     return res;

@@ -7,6 +7,7 @@ idf_component_register(
     REQUIRES
         "bus-i2c"
         "spi-ili9341"
+        "spi-st77xx"
         "keyboard"
         "wpa_supplicant"
         "nvs_flash"

@@ -11,9 +11,9 @@
 
 #pragma once
 
-#define REV 2
+#define REV 1
 
-#define NUM_LEDS 9
+#define NUM_LEDS 15
 #define NUM_BADGES 350
 
 #define GPIO_I2S_BCLK     26
@@ -28,22 +28,13 @@
 #define GPIO_SPI_MOSI     23
 #define GPIO_SPI_MISO     35
 #define GPIO_SPI_CS_LCD   19
-#define GPIO_SPI_DC_LCD   27
-#if REV == 1
-#define GPIO_SPI_CS_RADIO 21
-#elif REV == 2
-#define GPIO_SPI_CS_RADIO 0
-#endif
+#define GPIO_SPI_DC_LCD   13
 
 #define GPIO_I2C_SDA      4
 #define GPIO_I2C_SCL      5
 
-#if REV == 1
-#define GPIO_LCD_RESET    0
-#elif REV == 2
 #define GPIO_LCD_RESET    21
 #define GPIO_LCD_SYNC     36
-#endif
 #define GPIO_LCD_BL       13
 
 #define GPIO_LED_DATA     22

@@ -6,10 +6,11 @@
 
 #include "controller.h"
 #include "ili9341.h"
+#include "st77xx.h"
 #include "keyboard.h"
 #include "ktd2052.h"
 #include "pax_gfx.h"
-#include "troopers23_badge.h"
+#include "troopers24_badge.h"
 
 /** \brief Initialize basic board support
  *
@@ -29,7 +30,11 @@ void controller_led_callback();
 
 esp_err_t bsp_init();
 
+#ifdef TR23
 ILI9341* get_ili9341();
+#else
+ST77XX* get_st77xx();
+#endif
 
 PCA9555 * get_io_expander();
 
