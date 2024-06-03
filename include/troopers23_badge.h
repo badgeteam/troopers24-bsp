@@ -68,9 +68,10 @@
 // IO expander
 //#define IO_CC_RESET     0x08
 //#define IO_SD_DETECT    0x0A
-#define IO_BACKLIGHT   (1<<1)
-#define IO_SAO_GPIO1    (1<<2)
-#define IO_DEBUG_LED   (1<<3)
-#define IO_AMP_ENABLE   (1<<4)
-#define IO_AMP_GAIN0    (1<<5)
-#define IO_AMP_GAIN1    (1<<6)
+#define IO_BACKLIGHT   9
+#define IO_SAO_GPIO1   10
+#define IO_DEBUG_LED   11
+#define IO_AMP_ENABLE  12
+#define IO_AMP_GAIN0   13
+#define IO_AMP_GAIN1   14
+#define IO_HP_SENSE    15

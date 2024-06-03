@@ -158,6 +158,40 @@ esp_err_t bsp_init() {
     res = _bus_init();
     if (res != ESP_OK) return res;
 
+
+    // Keyboard
+    dev_keyboard.i2c_semaphore   = i2c_semaphore;
+    dev_keyboard.sao_presence_cb = &sao_presence_change;
+    res                          = keyboard_init(&dev_keyboard);
+    if (res != ESP_OK) return res;
+
+    // IO expander
+    dev_io_expander = dev_keyboard.pca;
+    //    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
+    //    if (!res) {
+    //        return res;
+    //    }
+
+
+    dev_controller.i2c_addr = CONTROLLER_ADDRESS;
+    dev_controller.i2c_semaphore = i2c_semaphore;
+    dev_controller.need_init = false;
+    dev_controller.poll_delay = 50;
+    dev_controller.queue = dev_keyboard.queue;
+    res = controller_init(&dev_controller);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing controller failed");
+        return res;
+    }
+    /* Configure Debug LED */
+    pca9555_set_gpio_direction(dev_io_expander, IO_DEBUG_LED, PCA_OUTPUT);
+    pca9555_set_gpio_value(dev_io_expander, IO_DEBUG_LED, 0);
+
+    /* Turning the backlight on */
+    pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
+    pca9555_set_gpio_value(dev_io_expander, IO_BACKLIGHT, 1);
+
+
 //    // SAO LED controller
 //    dev_ktd2052.i2c_addr = KTD2052_A_ADDRESS;
 //    dev_ktd2052.i2c_semaphore = i2c_semaphore;
@@ -188,30 +222,6 @@ esp_err_t bsp_init() {
     pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
 
-    // Keyboard
-    dev_keyboard.i2c_semaphore   = i2c_semaphore;
-    dev_keyboard.sao_presence_cb = &sao_presence_change;
-    res                          = keyboard_init(&dev_keyboard);
-    if (res != ESP_OK) return res;
-
-    // IO expander
-    dev_io_expander = dev_keyboard.pca;
-    //    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
-    //    if (!res) {
-    //        return res;
-    //    }
-
-
-    dev_controller.i2c_addr = CONTROLLER_ADDRESS;
-    dev_controller.i2c_semaphore = i2c_semaphore;
-    dev_controller.need_init = false;
-    dev_controller.poll_delay = 50;
-    dev_controller.queue = dev_keyboard.queue;
-    res = controller_init(&dev_controller);
-    if (res != ESP_OK) {
-        ESP_LOGE(TAG, "Initializing controller failed");
-        return res;
-    }
 
     bsp_ready = true;
     return ESP_OK;
