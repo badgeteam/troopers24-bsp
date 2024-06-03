@@ -24,11 +24,11 @@
 #define GPIO_SD_CLK       14
 #define GPIO_SD_CMD       15
 
-#define GPIO_SPI_CLK      18
-#define GPIO_SPI_MOSI     23
-#define GPIO_SPI_MISO     35
-#define GPIO_SPI_CS_LCD   19
-#define GPIO_SPI_DC_LCD   27
+#define GPIO_SPI_CLK      18 /* 2024 checked */
+#define GPIO_SPI_MOSI     23 /* 2024 checked */
+#define GPIO_SPI_MISO     35 /* 2024 checked */
+#define GPIO_SPI_CS_LCD   19 /* 2024 checked */
+#define GPIO_SPI_DC_LCD   13 /* 2024 checked */
 #if REV == 1
 #define GPIO_SPI_CS_RADIO 21
 #elif REV == 2
@@ -44,7 +44,7 @@
 #define GPIO_LCD_RESET    21
 #define GPIO_LCD_SYNC     36
 #endif
-#define GPIO_LCD_BL       13
+//#define GPIO_LCD_BL       13 Now on IO expander
 
 #define GPIO_LED_DATA     22
 
@@ -66,9 +66,11 @@
 #define SPI_DMA_CHANNEL       2
 
 // IO expander
-#define IO_CC_RESET     0x08
-#define IO_SD_DETECT    0x0A
-#define IO_SAO_GPIO2    0x0B
-#define IO_AMP_ENABLE   0x0C
-#define IO_AMP_GAIN0    0x0D
-#define IO_AMP_GAIN1    0x0E
+//#define IO_CC_RESET     0x08
+//#define IO_SD_DETECT    0x0A
+#define IO_BACKLIGHT   (1<<1)
+#define IO_SAO_GPIO1    (1<<2)
+#define IO_DEBUG_LED   (1<<3)
+#define IO_AMP_ENABLE   (1<<4)
+#define IO_AMP_GAIN0    (1<<5)
+#define IO_AMP_GAIN1    (1<<6)

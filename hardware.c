@@ -5,7 +5,7 @@
 #include <driver/spi_master.h>
 #include <esp_log.h>
 
-#include "../troopers23-efuse/include/efuse.h"
+#include "../troopers24-efuse/include/efuse.h"
 #include "managed_i2c.h"
 #include "pax_gfx.h"
 #include "rainbow.h"
@@ -17,7 +17,7 @@ static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
     .intr_pin         = GPIO_INT_KEY,
     .pca_addr         = PCA555A_0_ADDR,
-    .pin_sao_presence = IO_SAO_GPIO2,
+    .pin_sao_presence = IO_SAO_GPIO1,
 };
 static PCA9555* dev_io_expander = {0};
 static Controller dev_controller = {0};
@@ -158,14 +158,14 @@ esp_err_t bsp_init() {
     res = _bus_init();
     if (res != ESP_OK) return res;
 
-    // SAO LED controller
-    dev_ktd2052.i2c_addr = KTD2052_A_ADDRESS;
-    dev_ktd2052.i2c_semaphore = i2c_semaphore;
-    res = ktd2052_init(&dev_ktd2052);
-    if (res != ESP_OK) {
-        ESP_LOGE(TAG, "Initializing ktd2052 failed");
-        return res;
-    }
+//    // SAO LED controller
+//    dev_ktd2052.i2c_addr = KTD2052_A_ADDRESS;
+//    dev_ktd2052.i2c_semaphore = i2c_semaphore;
+//    res = ktd2052_init(&dev_ktd2052);
+//    if (res != ESP_OK) {
+//        ESP_LOGE(TAG, "Initializing ktd2052 failed");
+//        return res;
+//    }
 
     // LCD display
     dev_ili9341.spi_bus               = SPI_BUS;
