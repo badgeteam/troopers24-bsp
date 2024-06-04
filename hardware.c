@@ -203,12 +203,12 @@ esp_err_t bsp_init() {
 
     // LCD display
     dev_ili9341.spi_bus               = SPI_BUS;
-    dev_ili9341.pin_cs                = GPIO_SPI_CS_LCD;
+    dev_ili9341.pin_cs                = 0;//GPIO_SPI_CS_LCD;
     dev_ili9341.pin_dcx               = GPIO_SPI_DC_LCD;
     dev_ili9341.pin_reset             = GPIO_LCD_RESET;
     dev_ili9341.rotation              = 1;
     dev_ili9341.color_mode            = true;      // Blue and red channels are swapped
-    dev_ili9341.spi_speed             = 20000000;  // 20MHz
+    dev_ili9341.spi_speed             = 2000000;  // 2MHz
     dev_ili9341.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
     dev_ili9341.spi_semaphore = spi_semaphore;
     dev_ili9341.reset_external_pullup = false;
