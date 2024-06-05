@@ -23,7 +23,7 @@ static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
     .intr_pin         = GPIO_INT_KEY,
     .pca_addr         = PCA555A_0_ADDR,
-    .pin_sao_presence = IO_SAO_GPIO2,
+    .pin_sao_presence = IO_SAO_DETECT,
 };
 static PCA9555* dev_io_expander = {0};
 static Controller dev_controller = {0};
@@ -164,6 +164,19 @@ esp_err_t bsp_init() {
     res = _bus_init();
     if (res != ESP_OK) return res;
 
+    // Keyboard
+    dev_keyboard.i2c_semaphore   = i2c_semaphore;
+    dev_keyboard.sao_presence_cb = &sao_presence_change;
+    res                          = keyboard_init(&dev_keyboard);
+    if (res != ESP_OK) return res;
+
+    // IO expander
+    dev_io_expander = dev_keyboard.pca;
+    //    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
+    //    if (!res) {
+    //        return res;
+    //    }
+
     // SAO LED controller
     dev_ktd2052.i2c_addr = KTD2052_A_ADDRESS;
     dev_ktd2052.i2c_semaphore = i2c_semaphore;
@@ -202,10 +215,9 @@ esp_err_t bsp_init() {
     dev_st77xx.pin_reset             = GPIO_LCD_RESET;
     dev_st77xx.rotation              = 1;
     dev_st77xx.color_mode            = true;      // Blue and red channels are swapped
-    dev_st77xx.spi_speed             = 20000000;  // 20MHz
+    dev_st77xx.spi_speed             = SPI_SPEED;
     dev_st77xx.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
     dev_st77xx.spi_semaphore = spi_semaphore;
-    dev_st77xx.reset_external_pullup = false;
 
     res = st77xx_init(&dev_st77xx);
     if (res != ESP_OK) {
@@ -213,22 +225,11 @@ esp_err_t bsp_init() {
         return res;
     }
 
+    pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
+
     pax_buf_init(&pax_buffer, NULL, ST77XX_WIDTH, ST77XX_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
 #endif
-
-    // Keyboard
-    dev_keyboard.i2c_semaphore   = i2c_semaphore;
-    dev_keyboard.sao_presence_cb = &sao_presence_change;
-    res                          = keyboard_init(&dev_keyboard);
-    if (res != ESP_OK) return res;
-
-    // IO expander
-    dev_io_expander = dev_keyboard.pca;
-    //    res = pca9555_set_gpio_polarity(dev_io_expander, IO_SAO_GPIO2, PCA_INVERTED);
-    //    if (!res) {
-    //        return res;
-    //    }
 
 
     dev_controller.i2c_addr = CONTROLLER_ADDRESS;
@@ -255,6 +256,11 @@ ILI9341* get_ili9341() {
 ST77XX* get_st77xx() {
     if (!bsp_ready) return NULL;
     return &dev_st77xx;
+}
+
+esp_err_t st77xx_backlight(bool on) {
+    ESP_LOGD(TAG, "Setting backlight to %s", on ? "on" : "off");
+    return pca9555_set_gpio_value(dev_io_expander, IO_BACKLIGHT, on);
 }
 #endif
 

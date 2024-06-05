@@ -34,6 +34,7 @@ esp_err_t bsp_init();
 ILI9341* get_ili9341();
 #else
 ST77XX* get_st77xx();
+esp_err_t st77xx_backlight(bool on);
 #endif
 
 PCA9555 * get_io_expander();

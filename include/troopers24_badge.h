@@ -34,8 +34,9 @@
 #define GPIO_I2C_SCL      5
 
 #define GPIO_LCD_RESET    21
-#define GPIO_LCD_SYNC     36
+#ifdef TR23
 #define GPIO_LCD_BL       13
+#endif
 
 #define GPIO_LED_DATA     22
 
@@ -55,11 +56,17 @@
 #define SPI_BUS               VSPI_HOST
 #define SPI_MAX_TRANSFER_SIZE 4094
 #define SPI_DMA_CHANNEL       2
+#define SPI_SPEED             2000000  // 2MHz
 
 // IO expander
 #define IO_CC_RESET     0x08
 #define IO_SD_DETECT    0x0A
 #define IO_SAO_GPIO2    0x0B
-#define IO_AMP_ENABLE   0x0C
-#define IO_AMP_GAIN0    0x0D
-#define IO_AMP_GAIN1    0x0E
+
+#define IO_BACKLIGHT  9
+#define IO_SAO_DETECT 10
+#define IO_DEBUG_LED  11
+#define IO_AMP_ENABLE 12
+#define IO_AMP_GAIN0  13
+#define IO_AMP_GAIN1  14
+#define IO_HP_SENSE   15
