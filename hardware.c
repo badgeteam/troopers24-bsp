@@ -208,14 +208,17 @@ esp_err_t bsp_init() {
     pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
 #else
+    pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
+    st77xx_backlight(true);
+
     // LCD display
     dev_st77xx.spi_bus               = SPI_BUS;
     dev_st77xx.pin_cs                = GPIO_SPI_CS_LCD;
     dev_st77xx.pin_dcx               = GPIO_SPI_DC_LCD;
     dev_st77xx.pin_reset             = GPIO_LCD_RESET;
-    dev_st77xx.rotation              = 1;
-    dev_st77xx.color_mode            = true;      // Blue and red channels are swapped
-    dev_st77xx.spi_speed             = SPI_SPEED;
+    dev_st77xx.rotation              = 4;
+    dev_st77xx.color_mode            = false;      // Blue and red channels are swapped
+    dev_st77xx.spi_speed             = SPI_SPEED_LCD;
     dev_st77xx.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
     dev_st77xx.spi_semaphore = spi_semaphore;
 
@@ -224,8 +227,6 @@ esp_err_t bsp_init() {
         ESP_LOGE(TAG, "Initializing LCD failed");
         return res;
     }
-
-    pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
 
     pax_buf_init(&pax_buffer, NULL, ST77XX_WIDTH, ST77XX_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);

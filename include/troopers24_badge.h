@@ -56,7 +56,8 @@
 #define SPI_BUS               VSPI_HOST
 #define SPI_MAX_TRANSFER_SIZE 4094
 #define SPI_DMA_CHANNEL       2
-#define SPI_SPEED             2000000  // 2MHz
+#define SPI_SPEED_LCD         20000000  // 20MHz
+#define SPI_SPEED_NFC         6000000   // 6MHz
 
 // IO expander
 #define IO_CC_RESET     0x08
