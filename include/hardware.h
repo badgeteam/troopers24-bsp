@@ -7,6 +7,7 @@
 #include "controller.h"
 #include "ili9341.h"
 #include "st77xx.h"
+#include "st25r3911b.h"
 #include "keyboard.h"
 #include "ktd2052.h"
 #include "pax_gfx.h"
