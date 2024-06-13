@@ -9,6 +9,7 @@
 #include "managed_i2c.h"
 #include "pax_gfx.h"
 #include "rainbow.h"
+#include "st25r3911b_global.h"
 
 static const char* TAG = "hardware";
 
@@ -19,6 +20,7 @@ static ILI9341  dev_ili9341  = {0};
 #else
 static ST77XX  dev_st77xx  = {0};
 static ST25R3911B dev_st25r3911b = {0};
+ST25R3911B* global_st25r3911b = &dev_st25r3911b;
 #endif
 static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
@@ -210,7 +212,6 @@ esp_err_t bsp_init() {
     pax_buf_reversed(&pax_buffer, true);
 #else
     pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
-    st77xx_backlight(true);
 
     // LCD display
     dev_st77xx.spi_bus               = SPI_BUS;
@@ -249,7 +250,13 @@ esp_err_t bsp_init() {
     dev_st25r3911b.pin_cs = GPIO_SPI_CS_RFID;
     dev_st25r3911b.spi_speed = SPI_SPEED_RFID;
     dev_st25r3911b.pin_irq = GPIO_INT_RFID;
-    st25r3911b_init(&dev_st25r3911b);
+
+
+    res = st25r3911b_init(&dev_st25r3911b);
+    if (res != ESP_OK) {
+        ESP_LOGE(TAG, "Initializing NFC failed");
+        return res;
+    }
 
 
 
