@@ -14,7 +14,7 @@
 #define REV 1
 
 #define NUM_LEDS 15
-#define NUM_BADGES 350
+#define NUM_BADGES 390
 
 #define GPIO_I2S_BCLK     26
 #define GPIO_I2S_WS       12

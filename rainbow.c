@@ -20,5 +20,5 @@ static inline float mix(float a, float b, float t) {
 
 pax_col_t rainbow(int pos, int max) {
     float h = ((float) (pos % max)) / max;
-    return pax_col_hsv(h * 255, 0xff, 0xff);
+    return pax_col_hsv(h * 360, 0xff, 0xff);
 }
