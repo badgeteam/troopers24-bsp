@@ -18,6 +18,7 @@ static const char* TAG = "hardware";
 static ILI9341  dev_ili9341  = {0};
 #else
 static ST77XX  dev_st77xx  = {0};
+static ST25R3911B dev_st25r3911b = {0};
 #endif
 static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
@@ -243,6 +244,15 @@ esp_err_t bsp_init() {
         ESP_LOGE(TAG, "Initializing controller failed");
         return res;
     }
+
+    dev_st25r3911b.spi_bus = SPI_BUS;
+    dev_st25r3911b.pin_cs = GPIO_SPI_CS_RFID;
+    dev_st25r3911b.spi_speed = SPI_SPEED_RFID;
+    dev_st25r3911b.pin_irq = GPIO_INT_RFID;
+    st25r3911b_init(&dev_st25r3911b);
+
+
+
 
     bsp_ready = true;
     return ESP_OK;

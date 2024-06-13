@@ -29,6 +29,7 @@
 #define GPIO_SPI_MISO     35
 #define GPIO_SPI_CS_LCD   19
 #define GPIO_SPI_DC_LCD   13
+#define GPIO_SPI_CS_RFID  0
 
 #define GPIO_I2C_SDA      4
 #define GPIO_I2C_SCL      5
@@ -41,7 +42,7 @@
 #define GPIO_LED_DATA     22
 
 #define GPIO_INT_KEY      39
-#define GPIO_INT_RADIO    34
+#define GPIO_INT_RFID    34
 
 // I2C bus
 #define I2C_BUS        0
@@ -57,7 +58,7 @@
 #define SPI_MAX_TRANSFER_SIZE 4094
 #define SPI_DMA_CHANNEL       2
 #define SPI_SPEED_LCD         20000000  // 20MHz
-#define SPI_SPEED_NFC         6000000   // 6MHz
+#define SPI_SPEED_RFID         6000000   // 6MHz
 
 // IO expander
 #define IO_CC_RESET     0x08

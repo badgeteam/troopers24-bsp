@@ -14,4 +14,5 @@ idf_component_register(
         "pax-graphics"
         "i2c-controller"
         "i2c-ktd2052"
+        "spi-st25r3911b"
 )
