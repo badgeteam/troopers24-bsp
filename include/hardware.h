@@ -9,6 +9,7 @@
 #include "st77xx.h"
 #include "st25r3911b.h"
 #include "keyboard.h"
+#include "pca9555.h"
 #include "ktd2052.h"
 #include "pax_gfx.h"
 #include "troopers24_badge.h"
@@ -45,6 +46,8 @@ Keyboard* get_keyboard();
 Controller* get_controller();
 
 KTD2052* get_ktd2052();
+
+ST25R3911B* get_nfc();
 
 esp_err_t clear_keyboard_queue();
 

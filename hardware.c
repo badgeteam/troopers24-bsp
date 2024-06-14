@@ -248,8 +248,9 @@ esp_err_t bsp_init() {
 
     dev_st25r3911b.spi_bus = SPI_BUS;
     dev_st25r3911b.pin_cs = GPIO_SPI_CS_RFID;
-    dev_st25r3911b.spi_speed = SPI_SPEED_RFID;
     dev_st25r3911b.pin_irq = GPIO_INT_RFID;
+    dev_st25r3911b.spi_speed = SPI_SPEED_RFID;
+    dev_st25r3911b.spi_semaphore = spi_semaphore;
 
 
     res = st25r3911b_init(&dev_st25r3911b);
@@ -305,6 +306,11 @@ Controller* get_controller() {
 KTD2052* get_ktd2052() {
     if (!bsp_ready) return NULL;
     return &dev_ktd2052;
+}
+
+ST25R3911B* get_nfc() {
+    if (!bsp_ready) return NULL;
+    return &dev_st25r3911b;
 }
 
 esp_err_t display_flush() {
