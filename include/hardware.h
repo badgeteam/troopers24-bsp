@@ -42,6 +42,7 @@ esp_err_t st77xx_backlight(bool on);
 PCA9555 * get_io_expander();
 
 Keyboard* get_keyboard();
+bool key_was_pressed(Key key);
 
 Controller* get_controller();
 

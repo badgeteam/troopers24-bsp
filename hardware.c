@@ -266,6 +266,10 @@ esp_err_t bsp_init() {
     return ESP_OK;
 }
 
+bool key_was_pressed(Key key) {
+    return keyboard_key_was_pressed(get_keyboard(), key);
+}
+
 #ifdef TR23
 ILI9341* get_ili9341() {
     if (!bsp_ready) return NULL;
