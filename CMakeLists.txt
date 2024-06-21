@@ -6,7 +6,6 @@ idf_component_register(
     INCLUDE_DIRS "." "include"
     REQUIRES
         "bus-i2c"
-        "spi-ili9341"
         "spi-st77xx"
         "keyboard"
         "wpa_supplicant"

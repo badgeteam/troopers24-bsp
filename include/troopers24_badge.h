@@ -35,9 +35,6 @@
 #define GPIO_I2C_SCL      5
 
 #define GPIO_LCD_RESET    21
-#ifdef TR23
-#define GPIO_LCD_BL       13
-#endif
 
 #define GPIO_LED_DATA     22
 

@@ -13,15 +13,11 @@
 
 static const char* TAG = "hardware";
 
-#define TR24
 
-#ifdef TR23
-static ILI9341  dev_ili9341  = {0};
-#else
 static ST77XX  dev_st77xx  = {0};
 static ST25R3911B dev_st25r3911b = {0};
 ST25R3911B* global_st25r3911b = &dev_st25r3911b;
-#endif
+
 static Keyboard dev_keyboard = {
     .i2c_bus          = I2C_BUS,
     .intr_pin         = GPIO_INT_KEY,
@@ -189,28 +185,6 @@ esp_err_t bsp_init() {
         return res;
     }
 
-#ifdef TR23
-    // LCD display
-    dev_ili9341.spi_bus               = SPI_BUS;
-    dev_ili9341.pin_cs                = GPIO_SPI_CS_LCD;
-    dev_ili9341.pin_dcx               = GPIO_SPI_DC_LCD;
-    dev_ili9341.pin_reset             = GPIO_LCD_RESET;
-    dev_ili9341.rotation              = 1;
-    dev_ili9341.color_mode            = true;      // Blue and red channels are swapped
-    dev_ili9341.spi_speed             = 20000000;  // 20MHz
-    dev_ili9341.spi_max_transfer_size = SPI_MAX_TRANSFER_SIZE;
-    dev_ili9341.spi_semaphore = spi_semaphore;
-    dev_ili9341.reset_external_pullup = false;
-
-    res = ili9341_init(&dev_ili9341);
-    if (res != ESP_OK) {
-        ESP_LOGE(TAG, "Initializing LCD failed");
-        return res;
-    }
-
-    pax_buf_init(&pax_buffer, NULL, ILI9341_WIDTH, ILI9341_HEIGHT, PAX_BUF_16_565RGB);
-    pax_buf_reversed(&pax_buffer, true);
-#else
     pca9555_set_gpio_direction(dev_io_expander, IO_BACKLIGHT, PCA_OUTPUT);
 
     // LCD display
@@ -232,7 +206,6 @@ esp_err_t bsp_init() {
 
     pax_buf_init(&pax_buffer, NULL, ST77XX_WIDTH, ST77XX_HEIGHT, PAX_BUF_16_565RGB);
     pax_buf_reversed(&pax_buffer, true);
-#endif
 
 
     dev_controller.i2c_addr = CONTROLLER_ADDRESS;
@@ -270,12 +243,6 @@ bool key_was_pressed(Key key) {
     return keyboard_key_was_pressed(get_keyboard(), key);
 }
 
-#ifdef TR23
-ILI9341* get_ili9341() {
-    if (!bsp_ready) return NULL;
-    return &dev_ili9341;
-}
-#else
 ST77XX* get_st77xx() {
     if (!bsp_ready) return NULL;
     return &dev_st77xx;
@@ -285,7 +252,6 @@ esp_err_t st77xx_backlight(bool on) {
     ESP_LOGD(TAG, "Setting backlight to %s", on ? "on" : "off");
     return pca9555_set_gpio_value(dev_io_expander, IO_BACKLIGHT, on);
 }
-#endif
 
 PCA9555* get_io_expander() {
     if (!bsp_ready) return NULL;
@@ -322,13 +288,8 @@ esp_err_t display_flush() {
     if (!pax_is_dirty(&pax_buffer)) return ESP_OK;
     // ESP_LOGI(TAG, "Flush %u to %u\n", pax_buffer.dirty_y0, pax_buffer.dirty_y1);
     uint8_t*  buffer = (uint8_t*) (pax_buffer.buf);
-#ifdef TR23
-    esp_err_t res    = ili9341_write_partial_direct(&dev_ili9341, &buffer[pax_buffer.dirty_y0 * ILI9341_WIDTH * 2], 0, pax_buffer.dirty_y0, ILI9341_WIDTH,
-                                                    pax_buffer.dirty_y1 - pax_buffer.dirty_y0 + 1);
-#else
     esp_err_t res    = st77xx_write_partial_direct(&dev_st77xx, &buffer[pax_buffer.dirty_y0 * ST77XX_WIDTH * 2], 0, pax_buffer.dirty_y0, ST77XX_WIDTH,
                                                     pax_buffer.dirty_y1 - pax_buffer.dirty_y0 + 1);
-#endif
     if (res != ESP_OK) return res;
     pax_mark_clean(&pax_buffer);
     return res;
