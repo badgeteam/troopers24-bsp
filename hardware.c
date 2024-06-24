@@ -3,6 +3,7 @@
 #include <driver/gpio.h>
 #include <driver/i2c.h>
 #include <driver/spi_master.h>
+#include <driver/i2s.h>
 #include <esp_log.h>
 
 #include "../troopers24-efuse/include/efuse.h"
@@ -27,6 +28,8 @@ static Keyboard dev_keyboard = {
 static PCA9555* dev_io_expander = {0};
 static Controller dev_controller = {0};
 static KTD2052 dev_ktd2052 = {0};
+
+static sao_detect_fn_t troopers24_cb;
 
 static bool bsp_ready = false;
 
@@ -74,7 +77,10 @@ static inline void sao_presence_change(bool connected) {
             res = sao_set_leds(id, id * (NUM_BADGES / 4.), id + 2. * (NUM_BADGES / 4.), id + 3. * (NUM_BADGES / 4.));
             if (res != ESP_OK) goto err;
         } else {
-            ESP_LOGI(TAG, "SAO: didn't identify TROOPERS23 SAO");
+            ESP_LOGI(TAG, "SAO: didn't identify as TROOPERS23 SAO. Assuming TROOPERS24");
+            if (troopers24_cb != NULL) {
+                troopers24_cb(connected);
+            }
         }
     } else {
         ESP_LOGI(TAG, "SAO: disconnected");
@@ -232,15 +238,16 @@ esp_err_t bsp_init() {
         return res;
     }
 
-
-
-
     bsp_ready = true;
     return ESP_OK;
 }
 
 bool key_was_pressed(Key key) {
     return keyboard_key_was_pressed(get_keyboard(), key);
+}
+
+bool key_currently_pressed(Key key) {
+    return keyboard_key_currently_pressed(get_keyboard(), key);
 }
 
 ST77XX* get_st77xx() {
@@ -298,4 +305,8 @@ esp_err_t display_flush() {
 pax_buf_t* get_pax_buffer() {
     if (!bsp_ready) return NULL;
     return &pax_buffer;
+}
+
+void set_sao_callback_tr24(sao_detect_fn_t cb) {
+    troopers24_cb = cb;
 }

@@ -12,6 +12,7 @@
 #include "ktd2052.h"
 #include "pax_gfx.h"
 #include "troopers24_badge.h"
+#include "sndmixer.h"
 
 /** \brief Initialize basic board support
  *
@@ -38,6 +39,7 @@ PCA9555 * get_io_expander();
 
 Keyboard* get_keyboard();
 bool key_was_pressed(Key key);
+bool key_currently_pressed(Key key);
 
 Controller* get_controller();
 
@@ -49,3 +51,5 @@ esp_err_t clear_keyboard_queue();
 
 esp_err_t display_flush();
 pax_buf_t* get_pax_buffer();
+
+void set_sao_callback_tr24(sao_detect_fn_t cb);
